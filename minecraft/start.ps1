@@ -23,7 +23,7 @@ $VERSIONS_JSON="https://launchermeta.mojang.com/mc/game/version_manifest.json"
 $isNetworkAvailable = $false
 while (!$isNetworkAvailable) {
   try {
-    Invoke-WebRequest -UseBasicParsing -Uri $VERSIONS_JSON | Out-Null
+    Invoke-WebRequest -Uri $VERSIONS_JSON | Out-Null
     $isNetworkAvailable = $true
   }
   catch {
@@ -37,11 +37,11 @@ echo "Checking version information."
 switch -regex ("X$Env:VERSION")
 {
   "X|XLATEST|Xlatest" {
-    $VANILLA_VERSION = (invoke-webrequest -UseBasicParsing -Uri $VERSIONS_JSON | convertfrom-json | select -expand latest).release
+    $VANILLA_VERSION = (invoke-webrequest -Uri $VERSIONS_JSON | convertfrom-json | select -expand latest).release
     break
   }
   "XSNAPSHOT|Xsnapshot" {
-    $VANILLA_VERSION = (invoke-webrequest -UseBasicParsing -Uri $VERSIONS_JSON | convertfrom-json | select -expand latest).snapshot
+    $VANILLA_VERSION = (invoke-webrequest -Uri $VERSIONS_JSON | convertfrom-json | select -expand latest).snapshot
     break
   }
   "X[1-9]*" {
@@ -49,7 +49,7 @@ switch -regex ("X$Env:VERSION")
     break
   }
   default {
-    $VANILLA_VERSION = (invoke-webrequest -UseBasicParsing -Uri $VERSIONS_JSON | convertfrom-json | select -expand latest).release
+    $VANILLA_VERSION = (invoke-webrequest -Uri $VERSIONS_JSON | convertfrom-json | select -expand latest).release
     break
   }
 }
@@ -317,9 +317,9 @@ function installVanilla {
 
   if (!(Test-Path -Path $SERVER)) {
     echo "Downloading $SERVER ..."
-    Invoke-WebRequest -UseBasicParsing -Uri (
-      Invoke-WebRequest -UseBasicParsing -Uri (
-        (Invoke-WebRequest -UseBasicParsing -Uri $VERSIONS_JSON | ConvertFrom-Json).versions `
+    Invoke-WebRequest -Uri (
+      Invoke-WebRequest -Uri (
+        (Invoke-WebRequest -Uri $VERSIONS_JSON | ConvertFrom-Json).versions `
         | ? id -eq $VANILLA_VERSION).url `
       | ConvertFrom-Json).downloads.server.url `
       -OutFile "minecraft_server.$VANILLA_VERSION.jar"
