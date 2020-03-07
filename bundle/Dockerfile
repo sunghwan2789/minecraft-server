@@ -36,13 +36,14 @@ RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION) -ne $null)[0]; `
     } `
   }
 
-RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
+RUN Install-Package -Scope CurrentUser -Force 7Zip4PowerShell; `
+  Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
   Invoke-WebRequest -UseBasicParsing -Uri $env:BUNDLE_URL -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
   New-Item -ItemType Directory -Path C:\temp | Out-Null; `
-  Expand-Archive bundle.zip -DestinationPath C:\temp; `
+  Expand-7Zip bundle.zip -DestinationPath C:\temp; `
   Move-Item -Path C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
   Remove-Item C:\temp; `
   `

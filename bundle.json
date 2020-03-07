@@ -19,6 +19,16 @@
       ],
       "url": "https://github.com/AdoptOpenJDK/openjdk8-upstream-binaries/releases/download/jdk8u242-b08/OpenJDK8U-jre_x64_windows_8u242b08.zip",
       "verify_command": "java -version"
+    },
+    {
+      "name": "mc-monitor",
+      "url": "https://github.com/itzg/mc-monitor/releases/download/0.2.0/mc-monitor_0.2.0_windows_amd64.zip",
+      "verify_command": "mc-monitor version"
+    },
+    {
+      "name": "rcon-cli",
+      "url": "https://github.com/itzg/rcon-cli/releases/download/1.4.7/rcon-cli_1.4.7_windows_amd64.tar.gz",
+      "verify_command": "rcon-cli --help"
     }
   ]
 }
