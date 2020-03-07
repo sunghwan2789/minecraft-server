@@ -49,7 +49,7 @@ jobs:
           # Get bundle images and push it if it has changes.
           $bundle = Get-Content .\bundle.json | ConvertFrom-Json
           foreach ($item in $bundle.items) {
-            $image = '{0}:{1}-{2}' -f $env:BUNDLE_IMAGE_NAME, $item.name, ${{ matrix.host-tag }}
+            $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
             $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
             if ($digest -eq $lastDigests[$image]) {
               Write-Host ('{0} is up to date.')
