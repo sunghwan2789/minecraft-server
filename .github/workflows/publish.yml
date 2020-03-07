@@ -28,13 +28,27 @@ jobs:
         with:
           username: sunghwan2789
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
+      - uses: actions/download-artifact@v1.0.0
+        with:
+          name: bundle-digests
       - name: Push image
         run: |
-          $bundle = Get-Content .\bundle.json | ConvertFrom-Json; `
-            foreach ($item in $bundle.items) { `
-              $name = '{0}' -f $item.name; `
-              docker push ${env:BUNDLE_IMAGE_NAME}:$name-${{ matrix.host-tag }}; `
+          # Detect image changes using digests cache.
+          $lastDigests = Get-Content .\bundle-digests | ConvertFrom-StringData
+          # Get bundle images and push it if it has changes.
+          $bundle = Get-Content .\bundle.json | ConvertFrom-Json
+          foreach ($item in $bundle.items) {
+            $image = '{0}:{1}-{2}' -f $env:BUNDLE_IMAGE_NAME, $item.name, ${{ matrix.host-tag }}
+            $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+            if ($digest -ne $lastDigests[$image]) {
+              docker push $image
             }
+            '{0}={1}' -f $image, $digest | Out-File '.\bundle-digests.new' -Append
+          }
+      - uses: actions/upload-artifact@v1.0.0
+        with:
+          name: bundle-digests
+          path: bundle-digests.new
   build:
     needs: build-bundle
     runs-on: [self-hosted]
@@ -64,6 +78,8 @@ jobs:
             bundle-tag: ltsc2019
           - host-tag: 1809
             bundle-tag: ltsc2019
+    env:
+      IMAGE_TAG: ${{ matrix.os }}-${{ matrix.host-tag }}
     steps:
       - uses: actions/checkout@v2
       - name: Build image
@@ -80,9 +96,22 @@ jobs:
         with:
           username: sunghwan2789
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
+      - uses: actions/download-artifact@v1.0.0
+        with:
+          name: ${{ matrix.os }}-${{ matrix.host-tag }}-digest
       - name: Push image
         run: |
-          docker push ${env:IMAGE_NAME}:${{ matrix.os }}-${{ matrix.host-tag }}
+          $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
+          $lastDigest = Get-Content ('{0}-digest' -f $env:IMAGE_TAG)
+          $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+          if ($digest -ne $lastDigest) {
+            docker push $image
+          }
+          $digest | Out-File ('{0}-digest.new' -f $env:IMAGE_TAG)
+      - uses: actions/upload-artifact@v1.0.0
+        with:
+          name: ${{ matrix.os }}-${{ matrix.host-tag }}-digest
+          path: ${{ matrix.os }}-${{ matrix.host-tag }}-digest.new
   # TODO: latest tag support
   # manifest:
   #   needs: build
