@@ -26,7 +26,7 @@ jobs:
             $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
             $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
             Write-Host ('{0}={1}' -f $image, $digest)
-            [void]$sb.AppendFormat('{0}={1}\n', $image, $digest)
+            [void]$sb.AppendFormat('{0}={1}%0A', $image, $digest)
           }
           Write-Host ('::set-output name=digests::{0}' -f $sb.ToString())
       - name: Build image
@@ -52,9 +52,10 @@ jobs:
             $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
             $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
             if ($digest -eq $lastDigests[$image]) {
-              Write-Host ('{0} is up to date.')
+              Write-Host ('{0} is up to date.' -f $image)
             } else {
-              Write-Host ('{0} is changed. Push image ...' -f $image)
+              Write-Host ('{0} is different from {1}.' -f $image, $digest)
+              Write-Host 'Push image ...'
               docker push $image
             }
           }
@@ -121,7 +122,8 @@ jobs:
           if ($digest -eq $env:LAST_DIGEST) {
             Write-Host ('{0} is up to date.' -f $image)
           } else {
-            Write-Host ('{0} is changed. Push image ...' -f $image)
+            Write-Host ('{0} is different from {1}.' -f $image, $digest)
+            Write-Host 'Push image ...'
             docker push $image
           }
   # TODO: latest tag support
