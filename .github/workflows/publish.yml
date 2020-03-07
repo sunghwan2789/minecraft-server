@@ -6,8 +6,8 @@ on:
     - cron: '0 9 * * *'
 
 env:
-  IMAGE_NAME: sunghwan2789/minecraft-server
-  BUNDLE_IMAGE_NAME: sunghwan2789/minecraft-server-bundle
+  IMAGE_NAME: ${{ github.repository }}
+  BUNDLE_IMAGE_NAME: ${{ github.repository }}-bundle
 
 jobs:
   build-bundle:
