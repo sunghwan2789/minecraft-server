@@ -23,8 +23,9 @@ jobs:
           $sb = [System.Text.StringBuilder]::new()
           $bundle = Get-Content .\bundle.json | ConvertFrom-Json
           foreach ($item in $bundle.items) {
-            $image = '{0}:{1}-{2}' -f $env:BUNDLE_IMAGE_NAME, $item.name, ${{ matrix.host-tag }}
+            $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
             $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+            Write-Host ('{0}={1}' -f $image, $digest)
             [void]$sb.AppendFormat('{0}={1}\n', $image, $digest)
           }
           Write-Host ('::set-output name=digests::{0}' -f $sb.ToString())
@@ -50,7 +51,10 @@ jobs:
           foreach ($item in $bundle.items) {
             $image = '{0}:{1}-{2}' -f $env:BUNDLE_IMAGE_NAME, $item.name, ${{ matrix.host-tag }}
             $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
-            if ($digest -ne $lastDigests[$image]) {
+            if ($digest -eq $lastDigests[$image]) {
+              Write-Host ('{0} is up to date.')
+            } else {
+              Write-Host ('{0} is changed. Push image ...' -f $image)
               docker push $image
             }
           }
@@ -92,6 +96,7 @@ jobs:
         run: |
           $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
           $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+          Write-Host ('{0}={1}', $image, $digest)
           Write-Host ('::set-output name=digest::{0}' -f $digest)
       - name: Build image
         run: |
@@ -113,7 +118,10 @@ jobs:
         run: |
           $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
           $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
-          if ($digest -ne $env:LAST_DIGEST) {
+          if ($digest -eq $env:LAST_DIGEST) {
+            Write-Host ('{0} is up to date.' -f $image)
+          } else {
+            Write-Host ('{0} is changed. Push image ...' -f $image)
             docker push $image
           }
   # TODO: latest tag support
