@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
         env:
-          LAST_BUNDLE_DIGESTS: ${{ setps.last-bundle-digests.outputs.digests }}
+          LAST_BUNDLE_DIGESTS: ${{ steps.last-bundle-digests.outputs.digests }}
         run: |
           # Detect image changes using digests cache.
           $lastDigests = ConvertFrom-StringData $env:LAST_BUNDLE_DIGESTS
@@ -109,7 +109,7 @@ jobs:
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
         env:
-          LAST_DIGEST: ${{ setps.last-digest.outputs.digest }}
+          LAST_DIGEST: ${{ steps.last-digest.outputs.digest }}
         run: |
           $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
           $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
