@@ -1,10 +1,5 @@
 # escape=`
-
-# Tag of executing host
-# ltsc2019, ltsc2016, ...etc
-ARG HOST_TAG=ltsc2019
-
-FROM mcr.microsoft.com/windows/servercore:${HOST_TAG}
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
 SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
@@ -41,7 +36,8 @@ RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   Invoke-WebRequest -Uri $env:BUNDLE_URL -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
-  Expand-Archive -Path bundle.zip -DestinationPath C:\temp; `
+  New-Item -Path C:\temp -ItemType Dictionary | Out-Null; `
+  tar -xf bundle.zip -C C:\temp; `
   if (((Get-ChildItem -Path C:\temp -Directory).Length -eq 1) `
     -and ((Get-ChildItem -Path C:\temp -File).Length -eq 0)) { `
     Move-Item -Path C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
