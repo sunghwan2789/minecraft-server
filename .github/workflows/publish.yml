@@ -24,13 +24,16 @@ jobs:
           $bundle = Get-Content .\bundle.json | ConvertFrom-Json
           foreach ($item in $bundle.items) {
             $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
-            $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
-            Write-Host ('{0}={1}' -f $image, $digest)
-            [void]$sb.AppendFormat('{0}={1}%0A', $image, $digest)
+            try {
+              $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+              Write-Host ('{0}={1}' -f $image, $digest)
+              [void]$sb.AppendFormat('{0}={1}%0A', $image, $digest)
+            } catch {
+              # Ignore docker inspect errors
+              $LASTEXITCODE = 0
+            }
           }
           Write-Host ('::set-output name=digests::{0}' -f $sb.ToString())
-          # Ignore docker inspect errors
-          $LASTEXITCODE = 0
       - name: Build image
         run: |
           .\build-bundle.ps1 `
@@ -98,11 +101,14 @@ jobs:
         name: Get previous image digest
         run: |
           $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
-          $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
-          Write-Host ('{0}={1}', $image, $digest)
-          Write-Host ('::set-output name=digest::{0}' -f $digest)
-          # Ignore docker inspect errors
-          $LASTEXITCODE = 0
+          try {
+            $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+            Write-Host ('{0}={1}', $image, $digest)
+            Write-Host ('::set-output name=digest::{0}' -f $digest)
+          } catch {
+            # Ignore docker inspect errors
+            $LASTEXITCODE = 0
+          }
       - name: Build image
         run: |
           .\build-server.ps1 `
