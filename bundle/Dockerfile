@@ -49,8 +49,8 @@ RUN $bundleDestination = (($env:BUNDLE_DESTINATION, 'C:\bundle') -ne $null)[0]; 
   `
   Write-Host 'Expanding ...'; `
   New-Item C:\temp -ItemType Directory | Out-Null; `
-  Expand-7Zip bundle.zip C:\temp; `
-  Move-Item C:\temp\* -Destination $bundleDestination; `
+  Expand-7Zip bundle.zip C:\temp; dir C:\temp\; `
+  Move-Item -Path C:\temp\* -Destination $bundleDestination; `
   Remove-Item C:\temp; `
   `
   Write-Host 'Removing ...'; `
