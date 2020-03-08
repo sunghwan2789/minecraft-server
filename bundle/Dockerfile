@@ -4,7 +4,15 @@
 # ltsc2019, ltsc2016, ...etc
 ARG HOST_TAG=ltsc2019
 
-FROM mcr.microsoft.com/windows/servercore:${HOST_TAG}
+FROM mcr.microsoft.com/windows/servercore:${HOST_TAG} AS base
+
+SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
+
+RUN Install-PackageProvider NuGet -MinimumVersion 2.8.5.201 -Force; `
+  Set-PSRepository PSGallery -InstallationPolicy Trusted; `
+  Install-Module 7Zip4Powershell
+
+FROM base
 
 # URL that can download bundle archive
 ARG BUNDLE_URL=https://github.com/PowerShell/PowerShell/releases/download/v6.2.4/PowerShell-6.2.4-win-x64.zip
@@ -21,13 +29,7 @@ ARG ENVIRONMENT_VARIABLES
 # Command that is used to verify installation
 ARG VERIFY_COMMAND="pwsh -Version"
 
-SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
-
-RUN Install-PackageProvider NuGet -MinimumVersion 2.8.5.201 -Force; `
-  Set-PSRepository PSGallery -InstallationPolicy Trusted; `
-  Install-Module 7Zip4Powershell
-
-RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION) -ne $null)[0]; `
+RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION, 'C:\bundle') -ne $null)[0]; `
   $newPath = ('{0};{1}' -f $bundleHome, $env:PATH); `
   Write-Host ('Updating PATH: {0}' -f $newPath); `
   setx /M PATH $newPath; `
