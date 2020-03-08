@@ -58,3 +58,5 @@ RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   Invoke-Expression -Command $env:VERIFY_COMMAND; `
   `
   Write-Host 'Complete.'
+
+RUN Write-Host 'test'
