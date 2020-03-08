@@ -30,7 +30,7 @@
       "name": "rcon-cli",
       "directory": "C:\\bundle",
       "url": "https://github.com/itzg/rcon-cli/releases/download/1.4.7/rcon-cli_1.4.7_windows_amd64.tar.gz",
-      "verify_command": "rcon-cli help"
+      "verify_command": "rcon-cli --help"
     }
   ]
 }
