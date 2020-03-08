@@ -28,9 +28,8 @@ jobs:
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
         run: |
-          Get-Content .\bundle.json | ConvertFrom-Json | ForEach-Object {
-            $image = ('{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $_.name)
-            docker push $image
+          Get-Content .\bundle.json | ConvertFrom-Json | Select-Object { $_.items } | ForEach-Object {
+            docker push ('{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $_.name)
           }
   build:
     needs: build-bundle
@@ -81,8 +80,7 @@ jobs:
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
         run: |
-          $image = ('{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG)
-          docker push $image
+          docker push ('{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG)
   # TODO: latest tag support
   # manifest:
   #   needs: build
