@@ -12,7 +12,7 @@ jobs:
     runs-on: [self-hosted]
     strategy:
       matrix:
-        host-tag: [ltsc2019, ltsc2016]
+        host-tag: [ltsc2019]
     steps:
       - uses: actions/checkout@v2
       - name: Build image
@@ -50,13 +50,13 @@ jobs:
             host-tag: ltsc2019
         include:
           - host-tag: ltsc2016
-            bundle-tag: ltsc2016
+            bundle-tag: ltsc2019
           - host-tag: 1607
-            bundle-tag: ltsc2016
+            bundle-tag: ltsc2019
           - host-tag: 1709
-            bundle-tag: ltsc2016
+            bundle-tag: ltsc2019
           - host-tag: 1803
-            bundle-tag: ltsc2016
+            bundle-tag: ltsc2019
           - host-tag: ltsc2019
             bundle-tag: ltsc2019
           - host-tag: 1809
