@@ -25,7 +25,7 @@ jobs:
           foreach ($item in $bundle.items) {
             $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
             try {
-              $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+              $digest = docker inspect --format='{{ .Id }}' $image
               Write-Host ('{0}={1}' -f $image, $digest)
               [void]$sb.AppendFormat('{0}={1}%0A', $image, $digest)
             } catch {
@@ -55,7 +55,7 @@ jobs:
           $bundle = Get-Content .\bundle.json | ConvertFrom-Json
           foreach ($item in $bundle.items) {
             $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
-            $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+            $digest = docker inspect --format='{{ .Id }}' $image
             if ($digest -eq $lastDigests[$image]) {
               Write-Host ('{0} is up to date.' -f $image)
             } else {
@@ -102,7 +102,7 @@ jobs:
         run: |
           $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
           try {
-            $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+            $digest = docker inspect --format='{{ .Id }}' $image
             Write-Host ('{0}={1}', $image, $digest)
             Write-Host ('::set-output name=digest::{0}' -f $digest)
           } catch {
@@ -128,7 +128,7 @@ jobs:
           LAST_DIGEST: ${{ steps.last-digest.outputs.digest }}
         run: |
           $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
-          $digest = docker inspect --format='{{index .RepoDigests 0}}' $image
+          $digest = docker inspect --format='{{ .Id }}' $image
           if ($digest -eq $env:LAST_DIGEST) {
             Write-Host ('{0} is up to date.' -f $image)
           } else {
