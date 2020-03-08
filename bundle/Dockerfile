@@ -43,7 +43,7 @@ ARG VERIFY_COMMAND="pwsh -Version"
 
 RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
-  Invoke-WebRequest -Uri $env:BUNDLE_URL -UseBasicParsing -OutFile bundle.zip; `
+  Invoke-WebRequest -Uri $env:BUNDLE_URL -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
   New-Item -Path C:\temp -ItemType Directory | Out-Null; `
