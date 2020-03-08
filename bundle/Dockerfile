@@ -49,7 +49,7 @@ RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   Write-Host 'Expanding ...'; `
   New-Item C:\temp -ItemType Directory | Out-Null; `
   Expand-7Zip bundle.zip C:\temp; dir C:\temp\; `
-  Move-Item C:\temp\* -Destination $env:BUNDLE_DESTINATION -Force; `
+  Move-Item C:\temp\* -Destination $env:BUNDLE_DESTINATION -Force; dir $env:BUNDLE_DESTINATION; `
   Remove-Item C:\temp; `
   `
   Write-Host 'Removing ...'; `
