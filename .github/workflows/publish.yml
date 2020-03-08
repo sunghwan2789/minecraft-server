@@ -28,8 +28,9 @@ jobs:
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
         run: |
-          Get-Content .\bundle.json | ConvertFrom-Json | Select-Object { $_.items } | ForEach-Object {
-            docker push ('{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $_.name)
+          $bundle = Get-Content .\bundle.json | ConvertFrom-Json
+          foreach ($item in $bundle.items) {
+            docker push ('{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name)
           }
   build:
     needs: build-bundle
