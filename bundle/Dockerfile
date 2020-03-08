@@ -14,9 +14,6 @@ RUN Install-PackageProvider NuGet -MinimumVersion 2.8.5.201 -Force; `
 
 FROM base
 
-# URL that can download bundle archive
-ARG BUNDLE_URL=https://github.com/PowerShell/PowerShell/releases/download/v6.2.4/PowerShell-6.2.4-win-x64.zip
-
 # Directory that bundle should be installed to
 ARG BUNDLE_DESTINATION=C:\bundle
 
@@ -25,9 +22,6 @@ ARG BUNDLE_HOME
 
 # List of key=value environment variable that delimited with |
 ARG ENVIRONMENT_VARIABLES
-
-# Command that is used to verify installation
-ARG VERIFY_COMMAND="pwsh -Version"
 
 RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION, 'C:\bundle') -ne $null)[0]; `
   $newPath = ('{0};{1}' -f $bundleHome, $env:PATH); `
@@ -42,14 +36,21 @@ RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION, 'C:\bundle') -ne 
     } `
   }
 
-RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
+# URL that can download bundle archive
+ARG BUNDLE_URL=https://github.com/PowerShell/PowerShell/releases/download/v6.2.4/PowerShell-6.2.4-win-x64.zip
+
+# Command that is used to verify installation
+ARG VERIFY_COMMAND="pwsh -Version"
+
+RUN $bundleDestination = (($env:BUNDLE_DESTINATION, 'C:\bundle') -ne $null)[0]; `
+  Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
   Invoke-WebRequest $env:BUNDLE_URL -UseBasicParsing -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
   New-Item C:\temp -ItemType Directory | Out-Null; `
   Expand-7Zip bundle.zip C:\temp; `
-  Move-Item C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
+  Move-Item C:\temp\* -Destination $bundleDestination; `
   Remove-Item C:\temp; `
   `
   Write-Host 'Removing ...'; `
