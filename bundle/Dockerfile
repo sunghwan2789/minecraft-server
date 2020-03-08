@@ -8,11 +8,6 @@ FROM mcr.microsoft.com/windows/servercore:${HOST_TAG}
 
 SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
-RUN setx /M PATH ('C:\Program Files\7-Zip;{0}' -f $env:PATH); `
-  Invoke-WebRequest -Uri https://www.7-zip.org/a/7z1900-x64.msi -OutFile C:\7z.msi; `
-  Start-Process -FilePath msiexec -ArgumentList ('/i', 'C:\7z.msi') -NoNewWindow -Wait; `
-  Remove-Item -Path C:\7z.msi
-
 # Directory that bundle should be installed to
 ARG BUNDLE_DESTINATION
 
@@ -46,7 +41,7 @@ RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   Invoke-WebRequest -Uri $env:BUNDLE_URL -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
-  7z x -bb0 -bd -oC:\temp bundle.zip; `
+  Expand-Archive -Path bundle.zip -DestinationPath C:\temp; `
   if (((Get-ChildItem -Path C:\temp -Directory).Length -eq 1) `
     -and ((Get-ChildItem -Path C:\temp -File).Length -eq 0)) { `
     Move-Item -Path C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
