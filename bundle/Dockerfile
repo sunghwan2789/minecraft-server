@@ -23,6 +23,10 @@ ARG VERIFY_COMMAND="pwsh -Version"
 
 SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
+RUN Install-PackageProvider NuGet -MinimumVersion 2.8.5.201 -Force; `
+  Set-PSRepository PSGallery -InstallationPolicy Trusted; `
+  Install-Module 7Zip4Powershell
+
 RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION) -ne $null)[0]; `
   $newPath = ('{0};{1}' -f $bundleHome, $env:PATH); `
   Write-Host ('Updating PATH: {0}' -f $newPath); `
@@ -36,16 +40,14 @@ RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION) -ne $null)[0]; `
     } `
   }
 
-RUN Install-Module -Name 7Zip4Powershell -RequiredVersion 1.9.0 -Force
-
 RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
-  Invoke-WebRequest -UseBasicParsing -Uri $env:BUNDLE_URL -OutFile bundle.zip; `
+  Invoke-WebRequest $env:BUNDLE_URL -UseBasicParsing -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
-  New-Item -ItemType Directory -Path C:\temp | Out-Null; `
+  New-Item C:\temp -ItemType Directory | Out-Null; `
   Expand-7Zip bundle.zip C:\temp; `
-  Move-Item -Path C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
+  Move-Item C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
   Remove-Item C:\temp; `
   `
   Write-Host 'Removing ...'; `
