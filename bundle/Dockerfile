@@ -15,7 +15,7 @@ RUN Install-PackageProvider NuGet -MinimumVersion 2.8.5.201 -Force; `
 FROM base
 
 # Directory that bundle should be installed to
-ARG BUNDLE_DESTINATION=C:\bundle
+ARG BUNDLE_DESTINATION
 
 # Directory that bundle binary located in
 ARG BUNDLE_HOME
@@ -23,7 +23,7 @@ ARG BUNDLE_HOME
 # List of key=value environment variable that delimited with |
 ARG ENVIRONMENT_VARIABLES
 
-RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION, 'C:\bundle') -ne $null)[0]; `
+RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION) -ne $null)[0]; `
   $newPath = ('{0};{1}' -f $bundleHome, $env:PATH); `
   Write-Host ('Updating PATH: {0}' -f $newPath); `
   setx /M PATH $newPath; `
@@ -42,15 +42,14 @@ ARG BUNDLE_URL=https://github.com/PowerShell/PowerShell/releases/download/v6.2.4
 # Command that is used to verify installation
 ARG VERIFY_COMMAND="pwsh -Version"
 
-RUN $bundleDestination = (($env:BUNDLE_DESTINATION, 'C:\bundle') -ne $null)[0]; `
-  Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
+RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
   Invoke-WebRequest $env:BUNDLE_URL -UseBasicParsing -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
   New-Item C:\temp -ItemType Directory | Out-Null; `
   Expand-7Zip bundle.zip C:\temp; dir C:\temp\; `
-  Move-Item -Path C:\temp\* -Destination $bundleDestination; `
+  Move-Item C:\temp\* -Destination $env:BUNDLE_DESTINATION -Force; `
   Remove-Item C:\temp; `
   `
   Write-Host 'Removing ...'; `
