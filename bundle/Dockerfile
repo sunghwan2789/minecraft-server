@@ -10,7 +10,7 @@ SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPre
 
 RUN setx /M PATH ('C:\Program Files\7-Zip;{0}' -f $env:PATH); `
   Invoke-WebRequest -Uri https://www.7-zip.org/a/7z1900-x64.msi -OutFile C:\7z.msi; `
-  C:\7z.msi; `
+  Start-Process -FilePath msiexec -ArgumentList ('/i', 'C:\7z.msi') -NoNewWindow -Wait; `
   Remove-Item -Path C:\7z.msi
 
 # Directory that bundle should be installed to
