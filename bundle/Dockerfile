@@ -36,7 +36,7 @@ RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   Invoke-WebRequest -Uri $env:BUNDLE_URL -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
-  New-Item -Path C:\temp -ItemType Dictionary | Out-Null; `
+  New-Item -Path C:\temp -ItemType Directory | Out-Null; `
   tar -xf bundle.zip -C C:\temp; `
   if (((Get-ChildItem -Path C:\temp -Directory).Length -eq 1) `
     -and ((Get-ChildItem -Path C:\temp -File).Length -eq 0)) { `
