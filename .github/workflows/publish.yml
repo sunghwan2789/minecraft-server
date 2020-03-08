@@ -2,8 +2,6 @@ on:
   push:
     branches:
       - master
-  schedule:
-    - cron: '0 9 * * *'
 
 env:
   IMAGE_NAME: ${{ github.repository }}
@@ -17,23 +15,6 @@ jobs:
         host-tag: [ltsc2019, ltsc2016]
     steps:
       - uses: actions/checkout@v2
-      - id: last-bundle-digests
-        name: Get previous bundle digests
-        run: |
-          $sb = [System.Text.StringBuilder]::new()
-          $bundle = Get-Content .\bundle.json | ConvertFrom-Json
-          foreach ($item in $bundle.items) {
-            $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
-            try {
-              $digest = docker inspect --format='{{ .Id }}' $image
-              Write-Host ('{0}={1}' -f $image, $digest)
-              [void]$sb.AppendFormat('{0}={1}%0A', $image, $digest)
-            } catch {
-              # Ignore docker inspect errors
-              $LASTEXITCODE = 0
-            }
-          }
-          Write-Host ('::set-output name=digests::{0}' -f $sb.ToString())
       - name: Build image
         run: |
           .\build-bundle.ps1 `
@@ -46,23 +27,9 @@ jobs:
           username: sunghwan2789
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
-        env:
-          LAST_BUNDLE_DIGESTS: ${{ steps.last-bundle-digests.outputs.digests }}
         run: |
-          # Detect image changes using digests cache.
-          $lastDigests = ConvertFrom-StringData $env:LAST_BUNDLE_DIGESTS
-          # Get bundle images and push it if it has changes.
-          $bundle = Get-Content .\bundle.json | ConvertFrom-Json
-          foreach ($item in $bundle.items) {
-            $image = '{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $item.name
-            $digest = docker inspect --format='{{ .Id }}' $image
-            if ($digest -eq $lastDigests[$image]) {
-              Write-Host ('{0} is up to date.' -f $image)
-            } else {
-              Write-Host ('{0} is different from {1}.' -f $image, $digest)
-              Write-Host 'Push image ...'
-              docker push $image
-            }
+          Get-Content .\bundle.json | ConvertFrom-Json | ForEach-Object {
+            docker push ('{0}:{1}-${{ matrix.host-tag }}' -f $env:BUNDLE_IMAGE_NAME, $_.name)
           }
   build:
     needs: build-bundle
@@ -97,18 +64,6 @@ jobs:
       IMAGE_TAG: ${{ matrix.os }}-${{ matrix.host-tag }}
     steps:
       - uses: actions/checkout@v2
-      - id: last-digest
-        name: Get previous image digest
-        run: |
-          $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
-          try {
-            $digest = docker inspect --format='{{ .Id }}' $image
-            Write-Host ('{0}={1}', $image, $digest)
-            Write-Host ('::set-output name=digest::{0}' -f $digest)
-          } catch {
-            # Ignore docker inspect errors
-            $LASTEXITCODE = 0
-          }
       - name: Build image
         run: |
           .\build-server.ps1 `
@@ -124,18 +79,8 @@ jobs:
           username: sunghwan2789
           password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
-        env:
-          LAST_DIGEST: ${{ steps.last-digest.outputs.digest }}
         run: |
-          $image = '{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG
-          $digest = docker inspect --format='{{ .Id }}' $image
-          if ($digest -eq $env:LAST_DIGEST) {
-            Write-Host ('{0} is up to date.' -f $image)
-          } else {
-            Write-Host ('{0} is different from {1}.' -f $image, $digest)
-            Write-Host 'Push image ...'
-            docker push $image
-          }
+          docker push ('{0}:{1}' -f $env:IMAGE_NAME, $env:IMAGE_TAG)
   # TODO: latest tag support
   # manifest:
   #   needs: build
