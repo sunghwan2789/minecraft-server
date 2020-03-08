@@ -4,15 +4,13 @@
 # ltsc2019, ltsc2016, ...etc
 ARG HOST_TAG=ltsc2019
 
-FROM mcr.microsoft.com/windows/servercore:${HOST_TAG} AS base
+FROM mcr.microsoft.com/windows/servercore:${HOST_TAG}
 
 SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
-RUN Install-PackageProvider NuGet -MinimumVersion 2.8.5.201 -Force; `
-  Set-PSRepository PSGallery -InstallationPolicy Trusted; `
-  Install-Module 7Zip4Powershell
-
-FROM base
+RUN Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; `
+  Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; `
+  Install-Module -Name 7Zip4Powershell -RequiredVersion 1.9.0
 
 # Directory that bundle should be installed to
 ARG BUNDLE_DESTINATION
@@ -30,9 +28,9 @@ RUN $bundleHome = (($env:BUNDLE_HOME, $env:BUNDLE_DESTINATION) -ne $null)[0]; `
   `
   if ($env:ENVIRONMENT_VARIABLES) { `
     Write-Host 'Setting environmet variables ...'; `
-    foreach ($item in ($env:ENVIRONMENT_VARIABLES -split '\|')) { `
-      Write-Host ('  {0}' -f $item); `
-      setx /M ($item -split '=', 2); `
+    ($env:ENVIRONMENT_VARIABLES -split '\|') | ForEach-Object { `
+      Write-Host ('  {0}' -f $_); `
+      setx /M ($_ -split '=', 2); `
     } `
   }
 
@@ -44,16 +42,21 @@ ARG VERIFY_COMMAND="pwsh -Version"
 
 RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
-  Invoke-WebRequest $env:BUNDLE_URL -UseBasicParsing -OutFile bundle.zip; `
+  Invoke-WebRequest -Uri $env:BUNDLE_URL -UseBasicParsing -OutFile bundle.zip; `
   `
   Write-Host 'Expanding ...'; `
-  New-Item C:\temp -ItemType Directory | Out-Null; `
-  Expand-7Zip bundle.zip C:\temp; dir C:\temp\; `
-  Move-Item C:\temp\* -Destination $env:BUNDLE_DESTINATION -Force; dir $env:BUNDLE_DESTINATION; `
-  Remove-Item C:\temp; `
+  New-Item -Path C:\temp -ItemType Directory | Out-Null; `
+  Expand-7Zip -ArchiveFileName bundle.zip -TargetPath C:\temp; `
+  if (((Get-ChildItem -Path C:\temp -Directory).Length -eq 1) `
+    -and ((Get-ChildItem -Path C:\temp -File).Length -eq 0)) { `
+    Move-Item -Path C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
+    Remove-Item -Path C:\temp; `
+  } else { `
+    Move-Item -Path C:\temp -Destination $env:BUNDLE_DESTINATION; `
+  } `
   `
   Write-Host 'Removing ...'; `
-  Remove-Item bundle.zip -Force; `
+  Remove-Item -Path bundle.zip; `
   `
   Write-Host 'Verifying install ...'; `
   Write-Host ('  {0}' -f $env:VERIFY_COMMAND); `
