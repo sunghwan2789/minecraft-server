@@ -8,9 +8,10 @@ FROM mcr.microsoft.com/windows/servercore:${HOST_TAG}
 
 SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
-RUN Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force; `
-  Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; `
-  Install-Module -Name 7Zip4Powershell -RequiredVersion 1.9.0
+RUN setx /M PATH ('C:\Program Files\7-Zip;{0}' -f $env:PATH); `
+  Invoke-WebRequest -Uri https://www.7-zip.org/a/7z1900-x64.msi -OutFile C:\7z.msi; `
+  C:\7z.msi; `
+  Remove-Item -Path C:\7z.msi
 
 # Directory that bundle should be installed to
 ARG BUNDLE_DESTINATION
@@ -46,7 +47,7 @@ RUN Write-Host ('Downloading {0} ...' -f $env:BUNDLE_URL); `
   `
   Write-Host 'Expanding ...'; `
   New-Item -Path C:\temp -ItemType Directory | Out-Null; `
-  Expand-7Zip -ArchiveFileName bundle.zip -TargetPath C:\temp; `
+  7z x -bb0 -bd -oC:\temp bundle.zip; `
   if (((Get-ChildItem -Path C:\temp -Directory).Length -eq 1) `
     -and ((Get-ChildItem -Path C:\temp -File).Length -eq 0)) { `
     Move-Item -Path C:\temp\* -Destination $env:BUNDLE_DESTINATION; `
