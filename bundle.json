@@ -28,6 +28,11 @@
       "name": "rcon-cli",
       "url": "https://github.com/itzg/rcon-cli/releases/download/1.4.7/rcon-cli_1.4.7_windows_amd64.tar.gz",
       "verify_command": "rcon-cli --help"
+    },
+    {
+      "name": "mc-server-runner",
+      "url": "https://bloodcat.com/_data/static/mc-server-runner_1.3.3_windows_amd64.zip",
+      "verify_command": "mc-server-runner echo"
     }
   ]
 }
