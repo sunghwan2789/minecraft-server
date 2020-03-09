@@ -25,7 +25,7 @@ foreach ($item in $bundle.items) {
   $buildArgs = @()
   if ($item.directory) {
     $buildArgs += '--build-arg'
-    $buildArgs += 'BUILD_DESTINATION={0}' -f $item.directory
+    $buildArgs += 'BUNDLE_DESTINATION={0}' -f $item.directory
   }
   if ($item.home) {
     $buildArgs += '--build-arg'
