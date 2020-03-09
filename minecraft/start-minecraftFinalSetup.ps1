@@ -128,6 +128,5 @@ if ($env:TYPE -eq "FEED-THE-BEAST") {
   Write-Host "Starting the Minecraft server ..."
   $JVM_OPTS="-Xms$INIT_MEMORY -Xmx$MAX_MEMORY $env:JVM_OPTS -d64"
   $JAVA_ARGS = @($env:JVM_XX_OPTS, $JVM_OPTS, $expandedDOpts, "-jar", $env:SERVER, "$@", $EXTRA_ARGS) | ? {$_}
-  $mcServerRunnerArgs = @($bootstrapArgs, $mcServerRunnerArgs, 'java') + $JAVA_ARGS | ? {$_}
-  Start-Process -FilePath mc-server-runner -ArgumentList $mcServerRunnerArgs -NoNewWindow -PassThru -Wait | Out-Null
+  Start-Process -FilePath java -ArgumentList $JAVA_ARGS -NoNewWindow -PassThru -Wait | Out-Null
 }

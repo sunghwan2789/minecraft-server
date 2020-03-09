@@ -8,7 +8,6 @@ FROM ${BUNDLE_IMAGE_NAME}:pwsh-${BUNDLE_TAG} AS pwsh
 FROM ${BUNDLE_IMAGE_NAME}:java-${BUNDLE_TAG} AS java
 FROM ${BUNDLE_IMAGE_NAME}:mc-monitor-${BUNDLE_TAG} AS mc-monitor
 FROM ${BUNDLE_IMAGE_NAME}:rcon-cli-${BUNDLE_TAG} AS rcon-cli
-FROM ${BUNDLE_IMAGE_NAME}:mc-server-runner-${BUNDLE_TAG} AS mc-server-runner
 
 FROM mcr.microsoft.com/windows/nanoserver:${HOST_TAG}
 
@@ -23,7 +22,6 @@ COPY --from=pwsh C:\bundle C:\pwsh
 COPY --from=java $JAVA_BUNDLE_DIRECTORY $JAVA_HOME
 COPY --from=mc-monitor C:\bundle C:\bundle
 COPY --from=rcon-cli C:\bundle C:\bundle
-COPY --from=mc-server-runner C:\bundle C:\bundle
 
 SHELL [ "pwsh", "-c", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
