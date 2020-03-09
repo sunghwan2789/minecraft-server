@@ -15,6 +15,9 @@ ENV JAVA_HOME C:\java
 RUN echo Updating PATH: %JAVA_HOME%\bin;C:\pwsh;C:\bundle;%PATH% `
   && setx /M PATH "%JAVA_HOME%\bin;C:\pwsh;C:\bundle;%PATH%"
 
+RUN reg add hklm\system\currentcontrolset\services\cexecsvc /v ProcessShutdownTimeoutSeconds /t REG_DWORD /d 7200
+RUN reg add hklm\system\currentcontrolset\control /v WaitToKillServiceTimeout /t REG_SZ /d 7200000 /f
+
 ARG JAVA_BUNDLE_DIRECTORY=C:\java
 COPY --from=pwsh C:\bundle C:\pwsh
 COPY --from=java $JAVA_BUNDLE_DIRECTORY $JAVA_HOME
