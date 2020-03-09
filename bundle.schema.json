@@ -16,7 +16,7 @@
           "url": "",
           "verify_command": ""
         },
-        "required": ["name", "directory", "url", "verify_command"],
+        "required": ["name", "url", "verify_command"],
         "properties": {
           "name": {
             "$id": "#/properties/items/items/properties/name",

@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/windows/servercore:ltsc2019
 SHELL [ "powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
 # Directory that bundle should be installed to
-ARG BUNDLE_DESTINATION
+ARG BUNDLE_DESTINATION=C:\bundle
 
 # Directory that bundle binary located in
 ARG BUNDLE_HOME

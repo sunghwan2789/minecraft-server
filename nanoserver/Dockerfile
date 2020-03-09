@@ -17,9 +17,8 @@ RUN echo Updating PATH: %JAVA_HOME%\bin;C:\pwsh;C:\bundle;%PATH% `
     && setx /M PATH "%JAVA_HOME%\bin;C:\pwsh;C:\bundle;%PATH%"
 USER ContainerUser
 
-ARG PWSH_BUNDLE_DIRECTORY=C:\pwsh
 ARG JAVA_BUNDLE_DIRECTORY=C:\java
-COPY --from=pwsh $PWSH_BUNDLE_DIRECTORY C:\pwsh
+COPY --from=pwsh C:\bundle C:\pwsh
 COPY --from=java $JAVA_BUNDLE_DIRECTORY $JAVA_HOME
 COPY --from=mc-monitor C:\bundle C:\bundle
 COPY --from=rcon-cli C:\bundle C:\bundle
