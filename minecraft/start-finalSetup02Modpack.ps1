@@ -1,4 +1,4 @@
 $ErrorActionPreference = 'Stop';
 $ProgressPreference = 'SilentlyContinue';
 
-& "$PSScriptRoot\start-finalSetup03Modconfig.ps1"
+& $PSScriptRoot\start-finalSetup03Modconfig.ps1

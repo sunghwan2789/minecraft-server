@@ -3,9 +3,15 @@ $ProgressPreference = 'SilentlyContinue';
 
 function setServerProp($prop, $val) {
   if ($val) {
-    Write-Host "Setting $prop to $val in $env:SERVER_PROPERTIES"
-    (Get-Content -Raw $env:SERVER_PROPERTIES) -replace "$prop=(.*)`n", "$prop=$val`n" `
-      | Out-File $env:SERVER_PROPERTIES
+    switch -regex ($val) {
+      # normalize booleans
+      "^(TRUE|FALSE)$" {
+        $val = $val.ToLowerInvariant();
+      }
+    }
+    Write-Host "Setting $prop to '$val' in $env:SERVER_PROPERTIES"
+    (Get-Content -FilePath $env:SERVER_PROPERTIES -Raw) -replace "(?m)^$prop\s*=.*", "$prop=$val" `
+      | Out-File -FilePath $env:SERVER_PROPERTIES
   } else {
     Write-Host "Skip setting $prop"
   }
@@ -27,7 +33,7 @@ function customizeServerProps {
       $env:ORIGINAL_TYPE
     }
 
-    $label = (Get-Culture).TextInfo.ToTitleCase($label)
+    $label = (Get-Culture).TextInfo.ToTitleCase($label.ToLowerInvariant())
     $env:MOTD = "A $label Minecraft Server powered by Docker"
   }
 
@@ -67,19 +73,19 @@ function customizeServerProps {
 
   if ($env:DIFFICULTY) {
     $env:DIFFICULTY = switch -regex ($env:DIFFICULTY) {
-      "peaceful|0" {
+      "^(peaceful|0)$" {
         "0"
         break
       }
-      "easy|1" {
+      "^(easy|1)$" {
         "1"
         break
       }
-      "normal|2" {
+      "^(normal|2)$" {
         "2"
         break
       }
-      "hard|3" {
+      "^(hard|3)$" {
         "3"
         break
       }
@@ -94,19 +100,19 @@ function customizeServerProps {
   if ($env:MODE) {
     Write-Host "Setting mode"
     $env:MODE = switch -regex ($env:MODE) {
-      "su.*|0" {
+      "^(su.*|0)$" {
         "0"
         break
       }
-      "c.*|1" {
+      "^(c.*|1)$" {
         "1"
         break
       }
-      "a.*|2" {
+      "^(a.*|2)$" {
         "2"
         break
       }
-      "sp.*|3" {
+      "^(sp.*|3)$" {
         "3"
         break
       }
@@ -127,11 +133,11 @@ if ($env:TYPE -eq "FEED-THE-BEAST") {
 
 if (!(Test-Path $env:SERVER_PROPERTIES)) {
   Write-Host "Creating server.properties in $env:SERVER_PROPERTIES"
-  Copy-Item $PSScriptRoot\server.properties -Destination $env:SERVER_PROPERTIES
+  Copy-Item -Path $PSScriptRoot\server.properties -Destination $env:SERVER_PROPERTIES
   customizeServerProps
 } elseif ($env:OVERRIDE_SERVER_PROPERTIES) {
   switch -regex ($env:OVERRIDE_SERVER_PROPERTIES) {
-    "TRUE|1" {
+    "^(TRUE|1)$" {
       customizeServerProps
       break
     }
@@ -143,4 +149,4 @@ if (!(Test-Path $env:SERVER_PROPERTIES)) {
   Write-Host "server.properties already created, skipping"
 }
 
-& "$PSScriptRoot\start-finalSetup05EnvVariables.ps1"
+& $PSScriptRoot\start-finalSetup05EnvVariables.ps1

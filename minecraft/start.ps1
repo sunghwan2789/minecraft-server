@@ -12,8 +12,8 @@ if (!(Test-Path -Path "$pwd\eula.txt")) {
     exit 1
   }
 
-  "# Generated via Docker on $(date)" | Out-File eula.txt
-  "eula=$env:EULA" | Out-File eula.txt -Append
+  "# Generated via Docker on $(date)" | Out-File -FilePath eula.txt
+  "eula=$env:EULA" | Out-File -FilePath eula.txt -Append
 }
 
 $env:SERVER_PROPERTIES = "/data/server.properties"
@@ -23,7 +23,7 @@ $env:VERSIONS_JSON = "https://launchermeta.mojang.com/mc/game/version_manifest.j
 $isNetworkAvailable = $false
 while (!$isNetworkAvailable) {
   try {
-    Invoke-WebRequest $env:VERSIONS_JSON | Out-Null
+    Invoke-WebRequest -Uri $env:VERSIONS_JSON | Out-Null
     $isNetworkAvailable = $true
   } catch {
     $date = Get-Date -Format g
@@ -34,30 +34,29 @@ while (!$isNetworkAvailable) {
 
 Write-Host "Checking version information."
 $env:VANILLA_VERSION = switch -regex ("X$env:VERSION") {
-  "X|XLATEST" {
-    (Invoke-WebRequest $env:VERSIONS_JSON | ConvertFrom-Json).latest.release
+  "^(X|XLATEST)$" {
+    (Invoke-WebRequest -Uri $env:VERSIONS_JSON | ConvertFrom-Json).latest.release
     break
   }
-  "XSNAPSHOT" {
-    (Invoke-WebRequest $env:VERSIONS_JSON | ConvertFrom-Json).latest.snapshot
+  "^XSNAPSHOT$" {
+    (Invoke-WebRequest -Uri $env:VERSIONS_JSON | ConvertFrom-Json).latest.snapshot
     break
   }
-  "X[1-9].*" {
+  "^X[1-9].*$" {
     $env:VERSION
     break
   }
   default {
-    (Invoke-WebRequest $env:VERSIONS_JSON | ConvertFrom-Json).latest.release
+    (Invoke-WebRequest -Uri $env:VERSIONS_JSON | ConvertFrom-Json).latest.release
     break
   }
 }
-Write-Host "System Start with version $env:VANILLA_VERSION" -ForegroundColor Red
 
 $env:ORIGINAL_TYPE = $env:TYPE
 
 Write-Host "Checking type information."
 switch -regex ($env:TYPE) {
-  "VANILLA" {
+  "^VANILLA$" {
     & "$PSScriptRoot\start-deployVanilla.ps1"
     break
   }

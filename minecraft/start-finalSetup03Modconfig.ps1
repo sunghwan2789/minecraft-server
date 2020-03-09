@@ -1,4 +1,4 @@
 $ErrorActionPreference = 'Stop';
 $ProgressPreference = 'SilentlyContinue';
 
-& "$PSScriptRoot\start-finalSetup04ServerProperties.ps1"
+& $PSScriptRoot\start-finalSetup04ServerProperties.ps1

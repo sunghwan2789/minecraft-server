@@ -3,14 +3,14 @@ $ProgressPreference = 'SilentlyContinue';
 
 if ($env:OPS) {
   Write-Host "Setting/adding ops"
-  Remove-Item "ops.txt.converted" -ErrorAction SilentlyContinue
-  $env:OPS -split "," | Out-File "ops.txt"
+  Remove-Item -Path "ops.txt.converted" -ErrorAction Ignore
+  $env:OPS -split ',' | Out-File -FilePath "ops.txt"
 }
 
 if ($env:WHITELIST) {
   Write-Host "Setting whitelist"
-  Remove-Item "white-list.txt.converted" -ErrorAction SilentlyContinue
-  $env:WHITELIST -split "," | Out-File "white-list.txt"
+  Remove-Item "white-list.txt.converted" -ErrorAction Ignore
+  $env:WHITELIST -split ',' | Out-File -FilePath "white-list.txt"
 }
 
 # if [ -n "$ICON" -a ! -e server-icon.png ]; then
@@ -28,10 +28,10 @@ if ($env:WHITELIST) {
 
 # Make sure files exist and are valid JSON (for pre-1.12 to 1.12 upgrades)
 Write-Host "Checking for JSON files."
-Get-ChildItem -Filter "*.json" | ForEach-Object {
-  if (!(Get-Content -Raw $_) -replace "\s", "") {
+Get-ChildItem -Filter '*.json' | ForEach-Object {
+  if (!(Get-Content -Path $_ -Raw) -replace '\s', '') {
     Write-Host "Fixing JSON $_"
-    "[]" | Out-File $_
+    "[]" | Out-File -FilePath $_
   }
 }
 
@@ -80,8 +80,8 @@ Write-Host "Setting initial memory to $INIT_MEMORY and max to $MAX_MEMORY"
 $ENCODING_HACK = "-Dsun.stdout.encoding=UTF-8"
 $expandedDOpts = "$ENCODING_HACK"
 if ($env:JVM_DD_OPTS) {
-  $env:JVM_DD_OPTS -split "\s" | ForEach-Object {
-    $dopt = $_ -replace ":", "="
+  $env:JVM_DD_OPTS -split '\s' | ForEach-Object {
+    $dopt = $_ -replace ':', '='
     $expandedDOpts = "$expandedDOpts -D$dopt"
   }
 }
@@ -96,12 +96,12 @@ if ($env:TYPE -eq "FEED-THE-BEAST") {
   # exec sh ${FTB_SERVER_START}
 } else {
   # If we have a bootstrap.txt file... feed that in to the server stdin
-  if (Test-Path '/data/bootstrap.txt') {
+  if (Test-Path -Path '/data/bootstrap.txt') {
     $bootstrapArgs = "--bootstrap /data/bootstrap.txt"
   }
 
   Write-Host "Starting the Minecraft server ..."
   $JVM_OPTS="-Xms$INIT_MEMORY -Xmx$MAX_MEMORY ${JVM_OPTS} -d64"
   $JAVA_ARGS = @($env:JVM_XX_OPTS, $JVM_OPTS, $expandedDOpts, "-jar", $env:SERVER, "$@", $EXTRA_ARGS) | ? {$_}
-  Start-Process -FilePath java -ArgumentList $JAVA_ARGS -wait -PassThru -NoNewWindow | Out-Null
+  Start-Process -FilePath java -ArgumentList $JAVA_ARGS -NoNewWindow -PassThru -Wait | Out-Null
 }
