@@ -3,14 +3,14 @@ $ProgressPreference = 'SilentlyContinue';
 
 if ($env:OPS) {
   Write-Host "Setting/adding ops"
-  Remove-Item -Path "ops.txt.converted" -ErrorAction Ignore
-  $env:OPS -split ',' | Out-File -FilePath "ops.txt"
+  Remove-Item -Path ops.txt.converted -ErrorAction Ignore
+  $env:OPS -split ',' | Out-File -FilePath ops.txt
 }
 
 if ($env:WHITELIST) {
   Write-Host "Setting whitelist"
-  Remove-Item "white-list.txt.converted" -ErrorAction Ignore
-  $env:WHITELIST -split ',' | Out-File -FilePath "white-list.txt"
+  Remove-Item -Path white-list.txt.converted -ErrorAction Ignore
+  $env:WHITELIST -split ',' | Out-File -FilePath white-list.txt
 }
 
 # if [ -n "$ICON" -a ! -e server-icon.png ]; then
@@ -31,7 +31,7 @@ Write-Host "Checking for JSON files."
 Get-ChildItem -Filter '*.json' | ForEach-Object {
   if (!(Get-Content -Path $_ -Raw) -replace '\s', '') {
     Write-Host "Fixing JSON $_"
-    "[]" | Out-File -FilePath $_
+    '[]' | Out-File -FilePath $_
   }
 }
 
@@ -68,8 +68,11 @@ if ($env:CONSOLE -eq 'FALSE') {
   $EXTRA_ARGS += "--noconsole"
 }
 
+# Optional disable GUI for headless servers
+# if [[ ${GUI} = false || ${GUI} = FALSE ]]; then
 # Workaround - Server without nogui blows up in Windows containers
 $EXTRA_ARGS = "$EXTRA_ARGS nogui"
+# fi
 
 # put these prior JVM_OPTS at the end to give any memory settings there higher precedence
 $INIT_MEMORY = (($env:INIT_MEMORY, $env:MEMORY) -ne $null)[0]
@@ -89,11 +92,33 @@ if ($env:JVM_DD_OPTS) {
 $mcServerRunnerArgs = "--stop-duration 60s"
 
 if ($env:TYPE -eq "FEED-THE-BEAST") {
-  # cp -f $env:SERVER_PROPERTIES ${FTB_DIR}/server.properties
-  # cp -f /data/{eula,ops,white-list}.txt ${FTB_DIR}/
-  # cd ${FTB_DIR}
-  # Write-Host "Running FTB server modpack start ..."
-  # exec sh ${FTB_SERVER_START}
+  # if [ ! -e "${FTB_DIR}/ops.json" -a -e /data/ops.txt ]; then
+  #   cp -f /data/ops.txt ${FTB_DIR}/
+  # fi
+
+  # if [ ! -e "${FTB_DIR}/whitelist.json" -a -e /data/white-list.txt ]; then
+  #   cp -f /data/white-list.txt ${FTB_DIR}/
+  # fi
+
+  # cp -f /data/eula.txt "${FTB_DIR}/"
+
+  # cat > "${FTB_DIR}/settings-local.sh" <<EOF
+  # export MIN_RAM="${INIT_MEMORY}"
+  # export MAX_RAM="${MAX_MEMORY}"
+  # export JAVA_PARAMETERS="${JVM_XX_OPTS} -Xms${INIT_MEMORY} ${JVM_OPTS} $expandedDOpts"
+  # EOF
+
+  # # patch CurseForge cfg file, if present
+  # if [ -f "${FTB_DIR}/settings.cfg" ]; then
+  #   sed -i "s/MAX_RAM=[^;]*/MAX_RAM=${MAX_MEMORY}/" "${FTB_DIR}/settings.cfg"
+  # fi
+
+  # cd "${FTB_DIR}"
+  # log "Running FTB ${FTB_SERVER_START} in ${FTB_DIR} ..."
+  # if isTrue ${DEBUG_EXEC}; then
+  #   set -x
+  # fi
+  # exec mc-server-runner ${mcServerRunnerArgs} "${FTB_SERVER_START}"
 } else {
   # If we have a bootstrap.txt file... feed that in to the server stdin
   if (Test-Path -Path '/data/bootstrap.txt') {
@@ -102,6 +127,7 @@ if ($env:TYPE -eq "FEED-THE-BEAST") {
 
   Write-Host "Starting the Minecraft server ..."
   $JVM_OPTS="-Xms$INIT_MEMORY -Xmx$MAX_MEMORY ${JVM_OPTS} -d64"
+  # exec mc-server-runner ${bootstrapArgs} ${mcServerRunnerArgs} java $JVM_XX_OPTS $JVM_OPTS $expandedDOpts -jar $SERVER "$@" $EXTRA_ARGS
   $JAVA_ARGS = @($env:JVM_XX_OPTS, $JVM_OPTS, $expandedDOpts, "-jar", $env:SERVER, "$@", $EXTRA_ARGS) | ? {$_}
   Start-Process -FilePath java -ArgumentList $JAVA_ARGS -NoNewWindow -PassThru -Wait | Out-Null
 }

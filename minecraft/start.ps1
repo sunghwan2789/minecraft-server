@@ -16,6 +16,23 @@ if (!(Test-Path -Path "$pwd\eula.txt")) {
   "eula=$env:EULA" | Out-File -FilePath eula.txt -Append
 }
 
+
+# log "Running as uid=$(id -u) gid=$(id -g) with /data as '$(ls -lnd /data)'"
+
+# if ! touch /data/.verify_access; then
+#   log "ERROR: /data doesn't seem to be writable. Please make sure attached directory is writable by uid=$(id -u)"
+#   exit 2
+# fi
+
+# rm /data/.verify_access || true
+
+# if [[ $PROXY ]]; then
+#     export http_proxy="$PROXY"
+#     export https_proxy="$PROXY"
+#     log "INFO: Giving proxy time to startup..."
+#     sleep 5
+# fi
+
 $env:SERVER_PROPERTIES = "/data/server.properties"
 $env:VERSIONS_JSON = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
 
@@ -56,10 +73,36 @@ $env:ORIGINAL_TYPE = $env:TYPE
 
 Write-Host "Checking type information."
 switch -regex ($env:TYPE) {
+  # *BUKKIT|SPIGOT)
+  #   exec /start-deployBukkitSpigot $@
+  # ;;
+
+  # PAPER)
+  #   exec /start-deployPaper $@
+  # ;;
+
+  # FORGE)
+  #   exec /start-deployForge $@
+  # ;;
+
+  # FABRIC)
+  #   exec /start-deployFabric $@
+  # ;;
+
+  # FTB|CURSEFORGE)
+  #   exec /start-deployFTB $@
+  # ;;
   "^VANILLA$" {
-    & "$PSScriptRoot\start-deployVanilla.ps1"
+    & $PSScriptRoot\start-deployVanilla.ps1
     break
   }
+  # SPONGEVANILLA)
+  #   exec /start-deploySpongeVanilla $@
+  # ;;
+
+  # CUSTOM)
+  #   exec /start-deployCustom $@
+  # ;;
   default {
     Write-Host "Invalid type: '$env:TYPE'"
     Write-Host "Must be: VANILLA, FORGE, BUKKIT, SPIGOT, PAPER, FTB, CURSEFORGE, SPONGEVANILLA"

@@ -10,7 +10,7 @@ function setServerProp($prop, $val) {
       }
     }
     Write-Host "Setting $prop to '$val' in $env:SERVER_PROPERTIES"
-    (Get-Content -FilePath $env:SERVER_PROPERTIES -Raw) -replace "(?m)^$prop\s*=.*", "$prop=$val" `
+    (Get-Content -Path $env:SERVER_PROPERTIES -Raw) -replace "(?m)^$prop\s*=.*", "$prop=$val" `
       | Out-File -FilePath $env:SERVER_PROPERTIES
   } else {
     Write-Host "Skip setting $prop"
@@ -27,12 +27,14 @@ function customizeServerProps {
   # If not provided, generate a reasonable default message-of-the-day,
   # which shows up in the server listing in the client
   if (!$env:MOTD) {
+    # snapshot is the odd case where we have to look at version to identify that label
     $label = if (($env:ORIGINAL_TYPE -eq "VANILLA") -and ($env:VERSION -eq "SNAPSHOT")) {
       "SNAPSHOT"
     } else {
       $env:ORIGINAL_TYPE
     }
 
+    # Convert label to title-case
     $label = (Get-Culture).TextInfo.ToTitleCase($label.ToLowerInvariant())
     $env:MOTD = "A $label Minecraft Server powered by Docker"
   }
