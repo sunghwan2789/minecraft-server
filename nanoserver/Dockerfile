@@ -28,7 +28,7 @@ COPY --from=mc-server-runner C:\bundle C:\bundle
 SHELL [ "pwsh", "-c", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';" ]
 
 # Note: 'localhost' can bizarrely resolve to external addresses on some networks
-HEALTHCHECK --start-period=1m CMD mc-monitor status --host 127.0.0.1 --port $env:SERVER_PORT
+HEALTHCHECK --start-period=1m CMD pwsh -c "mc-monitor status --host 127.0.0.1 --port $env:SERVER_PORT"
 
 # TODO: Create minecraft user
 
