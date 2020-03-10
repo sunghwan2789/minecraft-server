@@ -3,7 +3,7 @@
   "items": [
     {
       "name": "pwsh",
-      "url": "https://github.com/PowerShell/PowerShell/releases/download/v6.2.4/PowerShell-6.2.4-win-x64.zip",
+      "url": "https://github.com/PowerShell/PowerShell/releases/download/v7.0.0/PowerShell-7.0.0-win-x64.zip",
       "verify_command": "pwsh -Version"
     },
     {
