@@ -5,11 +5,11 @@ on:
 
 env:
   IMAGE_NAME: ${{ github.repository }}
-  BUNDLE_IMAGE_NAME: docker.pkg.github.com/${{ github.repository }}/bundle
+  BUNDLE_IMAGE_NAME: ${{ github.repository }}-bundle
 
 jobs:
   build-bundle:
-    runs-on: [windows-2019]
+    runs-on: [self-hosted]
     strategy:
       matrix:
         host-tag: [ltsc2019]
@@ -23,9 +23,8 @@ jobs:
       - name: Docker Login
         uses: Azure/docker-login@v1
         with:
-          login-server: docker.pkg.github.com
           username: sunghwan2789
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
       - name: Push image
         run: |
           $bundle = Get-Content .\bundle.json | ConvertFrom-Json
