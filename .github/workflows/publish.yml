@@ -19,8 +19,7 @@ jobs:
         run: |
           .\build-bundle.ps1 `
             -HostTag ${{ matrix.host-tag }} `
-            -ImageName ${env:BUNDLE_IMAGE_NAME} `
-            --isolation=hyperv
+            -ImageName ${env:BUNDLE_IMAGE_NAME}
       - name: Docker Login
         uses: Azure/docker-login@v1
         with:
